@@ -8,8 +8,6 @@ function ListPage() {
   const session = location.state?.session;
   const googleAccessToken = location.state?.googleAccessToken || localStorage.getItem('googleAccessToken');
 
-  console.log("ListPage render: googleAccessToken =", googleAccessToken);
-
   const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,8 +35,6 @@ function ListPage() {
         console.error("ListPage useEffect: googleAccessToken missing or null", googleAccessToken);
         return;
       }
-      console.log("fetchMedia: Using googleAccessToken =", googleAccessToken);
-
       retryCountRef.current = 0;
       setLoading(true);
       setError(null);
@@ -96,9 +92,6 @@ function ListPage() {
     setModalError(null);
     setModalMediaUrl(null);
 
-    console.log("openModal: Using googleAccessToken =", googleAccessToken);
-
-
     try {
       const proxyResponse = await fetch(
         `${PROXY_MEDIA_URL_CF_URL}?baseUrl=${encodeURIComponent(mediaItem.mediaFile.baseUrl)}&type=${mediaItem.type}&size=w2048-h2048&accessToken=${googleAccessToken}`,
@@ -111,7 +104,6 @@ function ListPage() {
         throw new Error(`Failed to load media: ${proxyResponse.statusText}`);
       }
 
-      console.log(proxyResponse);
       setModalMediaUrl(`${proxyResponse.url}&accessToken=${googleAccessToken}`);
       setModalLoading(false);
 
