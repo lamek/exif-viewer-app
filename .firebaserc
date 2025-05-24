@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "my-react-app-f8c51",
+    "my-react-app": "my-react-app-f8c51",
+    "exif-viewer-app": "my-react-app-f8c51"
+  },
+  "targets": {},
+  "etags": {}
+}
