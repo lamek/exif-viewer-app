@@ -180,8 +180,7 @@ function PickerPage() {
       <div className="text-center w-full max-w-4xl mt-4">
         <button
           onClick={handleDisconnectClick}
-          // Changed border-transparent to border-gray-500
-          className="px-6 py-2 rounded-md font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200 border border-gray-500 hover:border-gray-300"
+          className="px-4 py-2 rounded-md font-semibold text-white bg-gray-700 shadow-md hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
         >
           Disconnect
         </button>
