@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { auth } from './firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logo from './assets/exif_logo_no_background.png';
+
 
 function AuthStatus() {
   const [user, setUser] = useState(null);
@@ -46,6 +48,13 @@ function AuthStatus() {
 
   return (
     <div className="flex flex-col items-center justify-center flex-grow">
+      <div className="flex justify-center mb-10"> 
+            <img 
+              src={logo} 
+              alt="Exif Viewer Logo" 
+              className="w-56 h-56 object-contain rounded-xl shadow-2xl" 
+            />
+        </div>
       {user && location.pathname === '/' ? (
         <div className="p-8">
           <p className="text-xl text-gray-200 mb-4">You're signed in. Redirecting to your photo picker...</p>

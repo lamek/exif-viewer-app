@@ -11,7 +11,7 @@ function PickerPage() {
   const googleAccessToken = location.state?.googleAccessToken || localStorage.getItem('googleAccessToken');
 
   const [session, setSession] = useState(null);
-  const [qrCodeUri, setQrCodeUri] = useState(null);
+  const [qrCodeUri, setQrCodeUri] = useState(null); // This holds the raw URI
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isPolling, setIsPolling] = useState(false);
@@ -22,13 +22,11 @@ function PickerPage() {
 
   useEffect(() => {
     const createSession = async () => {
-      // return to home if no access token
       if (!googleAccessToken) {
         localStorage.removeItem('googleAccessToken');
         navigate('/');
         return;
       }
-      // check for an existing session
       if (session) return;
 
       try {
@@ -40,7 +38,6 @@ function PickerPage() {
           },
         });
 
-        // per Chris, add error in case user does not accept permissions
         if (!response.ok) {
           const errorData = await response.json();
           if (errorData.code === 'insufficient-permissions') {
@@ -67,7 +64,6 @@ function PickerPage() {
       }
     };
     
-    // if no session exists, create a new one
     createSession();
   }, [googleAccessToken, session, navigate, CREATE_PICKER_SESSION_CF_URL]);
 
@@ -96,10 +92,8 @@ function PickerPage() {
 
           const sessionStatus = await response.json();
           setSession(sessionStatus);
-          console.log("Polling session status:", sessionStatus);
-
+          
           if (sessionStatus.mediaItemsSet) {
-            console.log("mediaItemsSet is true! Stopping polling and navigating to list.");
             clearInterval(pollingInterval);
             setIsPolling(false);
             navigate('/list', { state: { session: sessionStatus, googleAccessToken: googleAccessToken } });
@@ -116,7 +110,6 @@ function PickerPage() {
     return () => {
       if (pollingInterval) {
         clearInterval(pollingInterval);
-        console.log("Polling stopped.");
       }
     };
   }, [isPolling, session, googleAccessToken, navigate, GET_PICKER_SESSION_STATUS_CF_URL]);
@@ -127,58 +120,68 @@ function PickerPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-white text-lg">Loading picker session...</div>;
+    return <div className="p-8 text-white text-lg text-center">Loading picker session...</div>;
   }
 
   if (error) {
-    return <div className="p-8 text-red-400">Error: {error}</div>;
+    return <div className="p-8 text-red-400 text-center">Error: {error}</div>;
   }
 
+  // LOGIC: Create the Autoclose version for the web button
+  // We keep the raw qrCodeUri for the phone, as autoclose behavior on mobile webviews can vary.
+  const webPickerUri = qrCodeUri ? `${qrCodeUri}/autoclose` : '#';
+
   return (
-    <div className="p-8 flex flex-col items-center"> 
+    <div className="p-8 flex flex-col items-center w-full"> 
       {qrCodeUri ? (
         <>
-          <div className="flex flex-col sm:flex-row justify-center items-start sm:items-stretch w-full max-w-4xl space-y-8 sm:space-y-0 sm:space-x-8 mt-8 mb-8"> 
+          <h1 className="text-3xl font-bold text-white mb-8 text-center">Pick your images from Google Photos</h1>
+
+          <div className="flex flex-col md:flex-row justify-center items-stretch w-full max-w-4xl gap-8 mb-8"> 
             
-            <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-700 rounded-lg shadow-xl"> 
-              <h2 className="text-xl font-semibold mb-4 text-white">Open Google Photos in a new tab:</h2> 
-              <a 
-                id="picker_url" 
-                href={qrCodeUri} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 text-lg font-bold hover:underline cursor-pointer" 
-              >
-                Google Photo Picker
-              </a>
+            {/* BOX 1: WEB */}
+            <div className="flex-1 flex flex-col items-center justify-start p-8 bg-gray-800 rounded-xl shadow-xl border border-gray-700"> 
+              <h2 className="text-xl font-semibold mb-8 text-white">Open on Web</h2> 
+              <div className="flex-grow flex items-center justify-center w-full">
+                <a 
+                  href={webPickerUri} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105 text-center"
+                >
+                  Launch Picker
+                </a>
+              </div>
+              <p className="mt-6 text-sm text-gray-400 text-center">
+                This tab will auto-close when you click "Done".
+              </p>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-700 rounded-lg shadow-xl"> 
-              <h2 className="text-xl font-semibold mb-4 text-white">Open Google Photos on your phone:</h2> 
-              {qrCodeUri && (
+            {/* BOX 2: PHONE */}
+            <div className="flex-1 flex flex-col items-center justify-start p-8 bg-gray-800 rounded-xl shadow-xl border border-gray-700"> 
+              <h2 className="text-xl font-semibold mb-6 text-white">Open on Phone</h2> 
+              <div className="bg-white p-3 rounded-lg shadow-inner">
                 <QRCodeSVG
                   value={qrCodeUri}
-                  size={256}
+                  size={200}
                   level="H"
-                  includeMargin={true}
-                  className="bg-white p-2 rounded-md"
+                  includeMargin={false}
                 />
-              )}
-              <p className="mt-4 text-sm text-gray-300">Scan this code to launch the picker on your device.</p> 
+              </div>
+              <p className="mt-6 text-sm text-gray-400 text-center">Scan to launch on device</p> 
             </div>
 
           </div> 
-
-          <p className="m-2 mt-8 text-base text-gray-300">This page will automatically update when you've completed your selection.</p>
         </>
       ) : (
-        <p className="text-white">No session or pickerUri found. This might indicate an issue with the API call.</p>
+        <p className="text-white">No session found.</p>
       )}
       
-      <div className="text-right w-full max-w-4xl mt-8">
+      <div className="text-center w-full max-w-4xl mt-4">
         <button
           onClick={handleDisconnectClick}
-          className="inline-block px-4 py-2 rounded-md font-semibold text-white bg-gray-700 shadow-md hover:bg-gray-600 transition-colors duration-200 cursor-pointer" // UPDATED Disconnect button style
+          // Changed border-transparent to border-gray-500
+          className="px-6 py-2 rounded-md font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200 border border-gray-500 hover:border-gray-300"
         >
           Disconnect
         </button>

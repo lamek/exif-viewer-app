@@ -6,15 +6,22 @@ import SignOutHandler from './SignOutHandler';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
-
   const appBaseUrl = "https://exif.ladevzo.com";
 
   return (
     <Router>
       <div className="App flex flex-col min-h-screen">
-        <header className="App-header pt-16">
-          <h1 className="text-5xl font-extrabold mb-8 text-white">EXIF Viewer</h1>
-          <p>View exif data from your photos</p>
+        
+        {/* CHANGES MADE:
+           1. Removed "App-header" class (it was forcing vertical centering).
+           2. Added "bg-slate-800" (or any dark color you like) to replace the old background.
+           3. Added "items-center" to center everything horizontally.
+           4. "pt-20" gives nice top spacing, but not "huge".
+        */}
+        <header className="flex flex-col items-center pt-20 pb-10 bg-slate-800 text-white w-full flex-grow">
+          
+          <h1 className="text-5xl font-extrabold mb-4">EXIF Viewer</h1>
+          <p className="text-lg text-gray-300 mb-6">View exif data from your photos</p>
           <Routes>
             <Route path="/" element={<AuthStatus />} />
             <Route path="/picker" element={<PickerPage />} />
